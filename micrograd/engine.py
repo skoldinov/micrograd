@@ -1,3 +1,4 @@
+import math
 
 class Value:
     """ stores a single scalar value and its gradient """
@@ -9,6 +10,39 @@ class Value:
         self._backward = lambda: None
         self._prev = set(_children)
         self._op = _op # the op that produced this node, for graphviz / debugging / etc
+        
+    def exp(self):
+        out = Value(math.exp(self.data), (self,), "e")
+
+        def _backward():
+            self.grad += math.exp(self.data) * out.grad
+
+        out._backward = _backward
+
+        return out
+        
+    def tanh(self):
+        x = self.data
+        t = (math.exp(2*x)-1)/(math.exp(2*x)+1)
+        out = Value(t, (self,), 'tanh')
+
+        def _backward():
+            self.grad += (1 - (out.data)**2)*out.grad
+        out._backward = _backward
+
+        return out 
+
+    def sigmoid(self):
+        x = self.data
+        e = math.exp(x)
+        t = (e)/(e+1)
+        out = Value(t, (self,), "Sigmoid")
+
+        def _backward():
+            self.grad+= (e)/((1+e)**2) * out.grad
+        out._backward = _backward
+
+        return out   
 
     def __add__(self, other):
         other = other if isinstance(other, Value) else Value(other)

@@ -16,10 +16,19 @@ class Value:
 
         def _backward():
             self.grad += math.exp(self.data) * out.grad
-
         out._backward = _backward
 
         return out
+    
+    def log(self):
+        out = Value(math.log(self.data), (self,), "log")
+        
+        def _backward():
+            self.grad += self.data**(-1) * out.grad
+        out._backward = _backward
+        
+        return out
+        
         
     def tanh(self):
         x = self.data
